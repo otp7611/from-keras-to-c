@@ -1,5 +1,5 @@
 import tensorflow as tf
-
+from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
 
 def my_freeze_graph(output_node_names, destination, name="frozen_model.pb"):
     """
@@ -9,7 +9,7 @@ def my_freeze_graph(output_node_names, destination, name="frozen_model.pb"):
     :param name: Filename of the saved graph
     :return:
     """
-    tf.keras.backend.set_learning_phase(0)  # set inference phase
+    #tf.keras.backend.set_learning_phase(0)  # set inference phase
 
     sess = tf.keras.backend.get_session()
     input_graph_def = sess.graph.as_graph_def()     # get graph def proto from keras session's graph
@@ -73,10 +73,17 @@ model.fit(x_train, y_train,
 score = model.evaluate(x_test, y_test, verbose=0)
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
+model.export('my_model_savedmodel')
 
-print(f'input_layer_name={model.input.name}')
-output_layer_name = model.output.name.split(':')[0]
-print(f'output_layer_name={output_layer_name}')
-# Now we save the current weights, in a more real scenario we would reload a checkpoint
-# containing the best weights according to som measure of goodness.
-my_freeze_graph([output_layer_name], destination='/tmp', name="frozen_model.pb")
+loaded_model = tf.saved_model.load('my_model_savedmodel')
+concrete_func = loaded_model.signatures[tf.saved_model.DEFAULT_SERVING_SIGNATURE_DEF_KEY]
+
+# Convert variables to constants (freeze the graph)
+frozen_func = convert_variables_to_constants_v2(concrete_func)
+frozen_func.graph.as_graph_def()
+
+# Save the frozen graph to a .pb file
+tf.io.write_graph(graph_or_graph_def=frozen_func.graph,
+                  logdir='./',
+                  name='frozen_graph.pb',
+                  as_text=False)

@@ -132,6 +132,7 @@ MySession *my_model_load(const char *filename, const char *input_name, const cha
     auto input_op = TF_GraphOperationByName(graph.get(), input_name);
     auto output_op = TF_GraphOperationByName(graph.get(), output_name);
     if(!input_op || !output_op){
+        printf("return nullptr %p %p\n", input_op, output_op);
         return nullptr;
     }
 
@@ -240,12 +241,13 @@ TF_Tensor *ascii2tensor(const char *str, const TensorShape &shape){
 }
 
 int main(){
+    printf("Hello from TensorFlow C library version %s\n", TF_Version());
     /*
      * Load the frozen model, the input/output tensors names must be provided.
      * input_layer_name=conv2d_input:0
      * output_layer_name=dense_1/Softmax
      */
-    auto session = std::unique_ptr<MySession>(my_model_load("/tmp/frozen_model.pb", "conv2d_input", "dense_1/Softmax"));
+    auto session = std::unique_ptr<MySession>(my_model_load("frozen_graph.pb", "keras_tensor", "Identity"));
 
     /*
      * For simplicity we encode a handwritten number in ascii art. It will be
