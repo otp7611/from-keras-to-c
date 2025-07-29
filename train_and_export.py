@@ -63,6 +63,8 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Dropout(0.5),
     tf.keras.layers.Dense(num_classes, activation='softmax')])
 
+model.summary()
+
 model.compile(loss=tf.keras.losses.categorical_crossentropy,
               optimizer=tf.keras.optimizers.Adadelta(),
               metrics=['accuracy'])
@@ -80,7 +82,9 @@ concrete_func = loaded_model.signatures[tf.saved_model.DEFAULT_SERVING_SIGNATURE
 
 # Convert variables to constants (freeze the graph)
 frozen_func = convert_variables_to_constants_v2(concrete_func)
-frozen_func.graph.as_graph_def()
+graphDef = frozen_func.graph.as_graph_def()
+print("input node name:", graphDef.node[0].name)
+print("output node name:", graphDef.node[-1].name)
 
 # Save the frozen graph to a .pb file
 tf.io.write_graph(graph_or_graph_def=frozen_func.graph,
