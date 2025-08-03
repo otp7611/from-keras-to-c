@@ -7,4 +7,4 @@ include_directories(./include)
 
 add_executable(model_run model_run.cpp)
 target_link_libraries(model_run tensorflow tensorflow_framework)
-target_link_directories(model_run PUBLIC /home/data/github/libtensorflow-gpu/lib/)
+target_link_directories(model_run PUBLIC /media/workspace/github/tensorflow/bazel-bin/tensorflow/)
